@@ -13,7 +13,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'profile_photo', // Add this field
+        'profile_photo',
+        'role',
+        'status', // Add this field
     ];
 
     protected $hidden = [
@@ -25,3 +27,4 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 }
+

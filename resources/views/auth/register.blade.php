@@ -179,17 +179,6 @@
                     class="form-control" required>
             </div>
 
-            <div class="mb-3">
-                <label for="role" class="form-label">Role</label>
-                <select name="role" id="role" class="form-control" required>
-                    <option value="user" selected>User</option>
-                    <option value="admin">Admin</option>
-                </select>
-                @error('role')
-                    <span class="error-message">{{ $message }}</span>
-                @enderror
-            </div>
-
             <div class="d-grid gap-2">
                 <button type="submit" class="btn btn-register">Create Account</button>
             </div>

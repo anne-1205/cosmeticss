@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\UserHomeController;
+use App\Http\Controllers\Admin\ProductController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -52,3 +53,16 @@ Route::post('/login', [AuthenticatedSessionController::class, 'store']);
 Route::get('/userHome', [UserHomeController::class, 'index'])->name('user.home')->middleware('auth');
 
 require __DIR__.'/auth.php';
+
+Route::prefix('admin/products')->name('admin.products.')->group(function () {
+    Route::get('/', [ProductController::class, 'index'])->name('index');
+    Route::get('/create', [ProductController::class, 'create'])->name('create');
+    Route::post('/', [ProductController::class, 'store'])->name('store');
+    Route::get('/{product}', [ProductController::class, 'show'])->name('show');
+    Route::get('/{product}/edit', [ProductController::class, 'edit'])->name('edit');
+    Route::put('/{product}', [ProductController::class, 'update'])->name('update');
+    Route::delete('/{product}', [ProductController::class, 'destroy'])->name('destroy');
+    
+    // Image deletion route
+    Route::delete('/images/{image}', [ProductController::class, 'destroyImage'])->name('images.destroy');
+});

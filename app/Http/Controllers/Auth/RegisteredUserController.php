@@ -35,7 +35,7 @@ class RegisteredUserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'profile_photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
-            'role' => ['required', 'in:user,admin'],
+          
         ]);
 
         $profile_photo_path = null;
@@ -48,9 +48,9 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'profile_photo' => $profile_photo_path,
-            'role' => $request->role,
+            'role' => 'user', // Set role to 'user' by default
         ]);
-
+    
         event(new Registered($user));
 
         // Redirect to the login page after registration
