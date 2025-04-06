@@ -26,32 +26,28 @@ class ProductController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'category_id' => 'required|exists:categories,id', // Changed from 'category'
+            'category_id' => 'required|exists:categories,id',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // Check if the product already exists
-        $existingProduct = Product::where('name', $request->name)
-            ->where('category_id', $request->category_id) // Changed from 'category'
-            ->first();
-
-        if ($existingProduct) {
-            return response()->json(['success' => false, 'message' => 'Product already exists!']);
-        }
-
-        // Handle image upload
-        $imagePath = $request->file('image')->store('products', 'public');
-
-        // Save product to the database
         $product = Product::create([
             'name' => $request->name,
-            'category_id' => $request->category_id, // Changed from 'category'
+            'category_id' => $request->category_id,
             'price' => $request->price,
             'stock' => $request->stock,
-            'image' => $imagePath,
         ]);
+
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $imagePath = $image->store('products', 'public');
+                ProductImage::create([
+                    'product_id' => $product->id,
+                    'image_path' => $imagePath,
+                ]);
+            }
+        }
 
         return response()->json(['success' => true, 'message' => 'Product added successfully!', 'product' => $product]);
     }
@@ -85,6 +81,11 @@ class ProductController extends Controller
         $product->stock = $request->stock;
 
         if ($request->hasFile('image')) {
+            // Delete the old image
+            if ($product->image) {
+                Storage::disk('public')->delete($product->image);
+            }
+            // Store the new image
             $product->image = $request->file('image')->store('products', 'public');
         }
 

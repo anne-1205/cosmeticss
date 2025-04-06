@@ -193,6 +193,27 @@
                                 <option value="user">User</option>
                             </select>
                         </div>
+                        <!-- In the User Modal section, add these fields after the Email field -->
+<div class="mb-4">
+    <label for="user-password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+    <input 
+        type="password" 
+        id="user-password" 
+        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+        autocomplete="new-password"
+    >
+    <p class="text-xs text-gray-500 mt-1">Leave blank to keep current password</p>
+</div>
+
+<div class="mb-4">
+    <label for="user-password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+    <input 
+        type="password" 
+        id="user-password_confirmation" 
+        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+        autocomplete="new-password"
+    >
+</div>body>
                         <div class="mb-4">
                             <label for="user-status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                             <select id="user-status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
@@ -533,68 +554,75 @@
         }
 
         function saveUser() {
-            // Get form elements
-            const id = document.getElementById('user-id').value;
-            const name = document.getElementById('user-name').value.trim();
-            const email = document.getElementById('user-email').value.trim();
-            const role = document.getElementById('user-role').value;
-            const status = document.getElementById('user-status').value;
+    // Get form elements
+    const id = document.getElementById('user-id').value;
+    const name = document.getElementById('user-name').value.trim();
+    const email = document.getElementById('user-email').value.trim();
+    const password = document.getElementById('user-password').value;
+    const password_confirmation = document.getElementById('user-password_confirmation').value;
+    const role = document.getElementById('user-role').value;
+    const status = document.getElementById('user-status').value;
 
-            // Prepare data
-            const userData = {
-                name: name,
-                email: email,
-                role: role,
-                status: status
-            };
+    // Prepare data
+    const userData = {
+        name: name,
+        email: email,
+        role: role,
+        status: status
+    };
 
-            // Determine endpoint
-            const url = id ? `/admin/users/${id}` : '/admin/users';
-            const method = id ? 'PUT' : 'POST';
+    // Only add password fields if they're not empty
+    if (password) {
+        userData.password = password;
+        userData.password_confirmation = password_confirmation;
+    }
 
-            // Show saving state
-            const saveBtn = document.querySelector('#user-modal button[onclick="saveUser()"]');
-            const originalText = saveBtn.innerHTML;
-            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
-            saveBtn.disabled = true;
+    // Determine endpoint
+    const url = id ? `/admin/users/${id}` : '/admin/users';
+    const method = id ? 'PUT' : 'POST';
 
-            // Make API request
-            fetch(url, {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify(userData)
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(err => {
-                        throw new Error(err.message || 'Server error');
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    showToast('User saved successfully', 'success');
-                    closeModal('user-modal');
-                    loadUsers(); // Refresh the users table
-                } else {
-                    throw new Error(data.message || 'Failed to save user');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showToast(error.message || 'Failed to save user', 'error');
-            })
-            .finally(() => {
-                saveBtn.innerHTML = originalText;
-                saveBtn.disabled = false;
+    // Show saving state
+    const saveBtn = document.querySelector('#user-modal button[onclick="saveUser()"]');
+    const originalText = saveBtn.innerHTML;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
+    saveBtn.disabled = true;
+
+    // Make API request
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(userData)
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => {
+                throw new Error(err.message || 'Server error');
             });
         }
-
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showToast('User saved successfully', 'success');
+            closeModal('user-modal');
+            loadUsers(); // Refresh the users table
+        } else {
+            throw new Error(data.message || 'Failed to save user');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast(error.message || 'Failed to save user', 'error');
+    })
+    .finally(() => {
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+    });
+}
         function editUser(id) {
             openUserModal(id);
         }

@@ -22,9 +22,9 @@ class Order extends Model
         'billing_address'
     ];
 
-    public function user()
+    public function items()
     {
-        return $this->belongsTo(User::class);
+        return $this->hasMany(OrderItem::class);
     }
 
    
