@@ -5,6 +5,14 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\UserHomeController;
 use App\Http\Controllers\Admin\ProductController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -22,14 +30,15 @@ Route::get('/', function () {
 });
 
 // Admin Dashboard Route
-Route::get('/admin/dashboard', function () {
-    return view('admin.dashboard');
-})->middleware(['auth', 'verified', 'admin'])->name('admin.dashboard');
+Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])
+    ->middleware(['auth', 'verified', 'admin'])
+    ->name('admin.dashboard');
+
+    Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard')->middleware('auth');
 
 // User Home Route
-Route::get('/user/home', function () {
-    return view('user.home');
-})->middleware(['auth', 'verified', 'user'])->name('user.home');
+Route::get('/user/home', [UserHomeController::class, 'index'])->name
+('user.home')->middleware('auth');
 
 // Original Dashboard Route (kept for compatibility, but you can remove if not needed)
 Route::get('/dashboard', function () {
@@ -57,7 +66,7 @@ require __DIR__.'/auth.php';
 Route::prefix('admin/products')->name('admin.products.')->group(function () {
     Route::get('/', [ProductController::class, 'index'])->name('index');
     Route::get('/create', [ProductController::class, 'create'])->name('create');
-    Route::post('/', [ProductController::class, 'store'])->name('store');
+    Route::post('/', [ProductController::class, 'store'])->name('store');  // This handles saving a new product
     Route::get('/{product}', [ProductController::class, 'show'])->name('show');
     Route::get('/{product}/edit', [ProductController::class, 'edit'])->name('edit');
     Route::put('/{product}', [ProductController::class, 'update'])->name('update');
@@ -65,4 +74,41 @@ Route::prefix('admin/products')->name('admin.products.')->group(function () {
     
     // Image deletion route
     Route::delete('/images/{image}', [ProductController::class, 'destroyImage'])->name('images.destroy');
+});
+
+Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.add');
+Route::get('/cart', [CartController::class, 'viewCart'])->name('cart.index');
+Route::post('/cart/update', [CartController::class, 'updateQuantity'])->name('cart.update');
+
+Route::post('/users/update-role', [UserController::class, 'updateRole'])->name('users.updateRole');
+
+Route::post('/admin/products', [ProductController::class, 'store'])->name('admin.products.store');
+
+Route::post('/admin/categories', [CategoryController::class, 'store'])->name('admin.categories.store');
+
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+Route::delete('/admin/products/{id}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
+Route::put('/admin/products/{id}', [ProductController::class, 'update']);
+Route::post('/admin/products', [ProductController::class, 'store'])->name('products.store');
+
+Route::post('/admin/products', [ProductController::class, 'store']);
+
+Route::put('/admin/products/{id}', [ProductController::class, 'update']);
+
+Route::prefix('admin')->group(function() {
+    Route::get('/users', [UserController::class, 'index'])->name('admin.users.index');
+    Route::post('/users', [UserController::class, 'store'])->name('admin.users.store');
+    Route::put('/users/{id}', [UserController::class, 'update'])->name('admin.users.update');
+    Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('admin.users.destroy');
+});
+
+
+// Checkout routes
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    Route::get('/checkout/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
+    Route::get('/checkout/{order}', [CheckoutController::class, 'show'])->name('checkout.show');
 });

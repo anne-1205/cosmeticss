@@ -6,6 +6,7 @@
     <title>HM Cosmetics</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Italiana&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
             --primary-color: #ff69b4;
@@ -199,6 +200,22 @@
             font-family: var(--heading-font);
             letter-spacing: 1px;
         }
+
+        .cart-icon {
+            position: relative;
+            margin-right: 20px;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            padding: 0.25em 0.6em;
+            font-size: 0.75rem;
+        }
     </style>
 </head>
 <body>
@@ -211,16 +228,15 @@
                 </div>
                 <div class="col-md-6">
     <div class="auth-buttons d-flex align-items-center">
-        <!-- Profile Photo -->
+    <a href="{{ route('cart.index') }}" class="btn btn-shop position-relative">
+    <i class="fas fa-shopping-cart"></i>
+    <span id="cart-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
+</a>
         <img src="{{ Auth::user()->profile_photo ? asset('storage/' . Auth::user()->profile_photo) : asset('images/default-avatar.png') }}" 
              alt="Profile Photo" 
              class="rounded-circle me-3" 
              style="width: 50px; height: 50px; object-fit: cover; border: 2px solid var(--primary-color);">
-
-        <!-- Manage Profile Button -->
         <a href="{{ route('profile.edit') }}" class="btn btn-login">Manage Profile</a>
-
-        <!-- Logout Button -->
         <form method="POST" action="{{ route('logout') }}" class="d-inline">
             @csrf
             <button type="submit" class="btn btn-register">Log Out</button>
@@ -243,49 +259,33 @@
     <!-- Featured Products -->
     <section class="featured-products">
         <div class="container">
-            <h2 class="text-center mb-5">Best Sellers</h2>
-            <div class="row">
-                <div class="col-md-3">
-                    <div class="card product-card">
-                        <img src="{{ asset('images/lipstick.jpg') }}" class="product-image" alt="Luxury Lipstick">
-                        <div class="card-body">
-                            <h5 class="card-title">Luxury Lipstick</h5>
-                            <p class="card-text">$24.99</p>
-                            <button class="btn btn-shop">Add to Cart</button>
+            <h2 class="text-center mb-5">Shop by Category</h2>
+            @foreach ($categories as $category)
+                <h3 class="text-center mt-4">{{ ucfirst($category->name) }}</h3>
+                <div class="row">
+                    @foreach ($products->where('category', $category->name) as $product)
+                        <div class="col-md-3">
+                            <div class="card product-card">
+                                <img src="{{ asset('storage/' . $product->image) }}" class="product-image" alt="{{ $product->name }}">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ $product->name }}</h5>
+                                    <p class="card-text">${{ number_format($product->price, 2) }}</p>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <button class="btn btn-secondary me-2" onclick="updateQuantity('quantity-{{ $product->id }}', -1)">-</button>
+                                        <input type="number" id="quantity-{{ $product->id }}" class="form-control text-center" value="1" min="1" style="width: 60px;">
+                                        <button class="btn btn-secondary ms-2" onclick="updateQuantity('quantity-{{ $product->id }}', 1)">+</button>
+                                    </div>
+                                    <button class="btn btn-shop add-to-cart" 
+                                            data-product-id="{{ $product->id }}"
+                                            onclick="addToCart(this)">
+                                        <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    @endforeach
                 </div>
-                <div class="col-md-3">
-                    <div class="card product-card">
-                        <img src="{{ asset('images/foundation.jpg') }}" class="product-image" alt="Perfect Foundation">
-                        <div class="card-body">
-                            <h5 class="card-title">Perfect Foundation</h5>
-                            <p class="card-text">$34.99</p>
-                            <button class="btn btn-shop">Add to Cart</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card product-card">
-                        <img src="{{ asset('images/mascara.jpg') }}" class="product-image" alt="Volume Mascara">
-                        <div class="card-body">
-                            <h5 class="card-title">Volume Mascara</h5>
-                            <p class="card-text">$19.99</p>
-                            <button class="btn btn-shop">Add to Cart</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card product-card">
-                        <img src="{{ asset('images/eyeshadow.jpg') }}" class="product-image" alt="Shimmer Eyeshadow">
-                        <div class="card-body">
-                            <h5 class="card-title">Shimmer Eyeshadow</h5>
-                            <p class="card-text">$29.99</p>
-                            <button class="btn btn-shop">Add to Cart</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            @endforeach
         </div>
     </section>
 
@@ -350,6 +350,51 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://kit.fontawesome.com/your-kit-code.js" crossorigin="anonymous"></script>
+    <script>
+function addToCart(button) {
+    const productId = button.getAttribute('data-product-id');
+    const quantityInput = document.getElementById(`quantity-${productId}`);
+    const quantity = parseInt(quantityInput?.value || 1);
+
+    fetch('/cart/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+        },
+        body: JSON.stringify({
+            product_id: productId,
+            quantity: quantity,
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            updateCartCount();
+        } else {
+            alert('Failed to add product to cart.');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function updateCartCount() {
+    fetch('/cart/count', {
+        method: 'GET',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('cart-count').textContent = data.count;
+    });
+}
+
+// Initialize cart count on page load
+document.addEventListener('DOMContentLoaded', updateCartCount);
+</script>
 </body>
 </html>
 

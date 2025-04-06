@@ -225,51 +225,90 @@
         </div>
     </section>
 
+    <!-- Hardcoded Products for Design -->
+    <section class="hardcoded-products">
+        <div class="container">
+            <h2 class="text-center mb-5">Our Favorites</h2>
+            <div class="row">
+                <!-- Lipstick -->
+                <div class="col-md-3">
+                    <div class="card product-card">
+                        <img src="{{ asset('images/lipstick.jpg') }}" class="product-image" alt="Lipstick">
+                        <div class="card-body">
+                            <h5 class="card-title">Lipstick</h5>
+                            <p class="card-text">$15.00</p>
+                            <button class="btn btn-shop">
+                                <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Eyeshadow -->
+                <div class="col-md-3">
+                    <div class="card product-card">
+                        <img src="{{ asset('images/eyeshadow.jpg') }}" class="product-image" alt="Eyeshadow">
+                        <div class="card-body">
+                            <h5 class="card-title">Eyeshadow</h5>
+                            <p class="card-text">$20.00</p>
+                            <button class="btn btn-shop">
+                                <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Mascara -->
+                <div class="col-md-3">
+                    <div class="card product-card">
+                        <img src="{{ asset('images/mascara.jpg') }}" class="product-image" alt="Mascara">
+                        <div class="card-body">
+                            <h5 class="card-title">Mascara</h5>
+                            <p class="card-text">$18.00</p>
+                            <button class="btn btn-shop">
+                                <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Foundation -->
+                <div class="col-md-3">
+                    <div class="card product-card">
+                        <img src="{{ asset('images/foundation.jpg') }}" class="product-image" alt="Foundation">
+                        <div class="card-body">
+                            <h5 class="card-title">Foundation</h5>
+                            <p class="card-text">$25.00</p>
+                            <button class="btn btn-shop">
+                                <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Featured Products -->
     <section class="featured-products">
         <div class="container">
             <h2 class="text-center mb-5">Best Sellers</h2>
             <div class="row">
+                @foreach ($products as $product)
                 <div class="col-md-3">
                     <div class="card product-card">
-                        <img src="{{ asset('images/lipstick.jpg') }}" class="product-image" alt="Luxury Lipstick">
+                        <img src="{{ asset('storage/' . $product->image) }}" class="product-image" alt="{{ $product->name }}">
                         <div class="card-body">
-                            <h5 class="card-title">Luxury Lipstick</h5>
-                            <p class="card-text">$24.99</p>
-                            <button class="btn btn-shop">Add to Cart</button>
+                            <h5 class="card-title">{{ $product->name }}</h5>
+                            <p class="card-text">${{ number_format($product->price, 2) }}</p>
+                            <button class="btn btn-shop add-to-cart" 
+                                    data-product-id="{{ $product->id }}"
+                                    data-product-name="{{ $product->name }}"
+                                    data-product-price="{{ $product->price }}"
+                                    data-product-image="{{ $product->image }}">
+                                <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                            </button>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card product-card">
-                        <img src="{{ asset('images/foundation.jpg') }}" class="product-image" alt="Perfect Foundation">
-                        <div class="card-body">
-                            <h5 class="card-title">Perfect Foundation</h5>
-                            <p class="card-text">$34.99</p>
-                            <button class="btn btn-shop">Add to Cart</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card product-card">
-                        <img src="{{ asset('images/mascara.jpg') }}" class="product-image" alt="Volume Mascara">
-                        <div class="card-body">
-                            <h5 class="card-title">Volume Mascara</h5>
-                            <p class="card-text">$19.99</p>
-                            <button class="btn btn-shop">Add to Cart</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card product-card">
-                        <img src="{{ asset('images/eyeshadow.jpg') }}" class="product-image" alt="Shimmer Eyeshadow">
-                        <div class="card-body">
-                            <h5 class="card-title">Shimmer Eyeshadow</h5>
-                            <p class="card-text">$29.99</p>
-                            <button class="btn btn-shop">Add to Cart</button>
-                        </div>
-                    </div>
-                </div>
+                @endforeach
             </div>
         </div>
     </section>
@@ -311,6 +350,35 @@
         </div>
     </section>
 
+    <!-- Products by Category -->
+    <section class="products-by-category">
+        <div class="container">
+            @foreach ($categories as $category)
+                <h2 class="text-xl font-semibold mb-4">{{ ucfirst($category->name) }}</h2>
+                <div class="row">
+                    @foreach ($products->where('category', $category->name) as $product)
+                        <div class="col-md-3">
+                            <div class="card product-card">
+                                <img src="{{ asset('storage/' . $product->image) }}" class="product-image" alt="{{ $product->name }}">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ $product->name }}</h5>
+                                    <p class="card-text">${{ number_format($product->price, 2) }}</p>
+                                    <button class="btn btn-shop add-to-cart" 
+                                            data-product-id="{{ $product->id }}"
+                                            data-product-name="{{ $product->name }}"
+                                            data-product-price="{{ $product->price }}"
+                                            data-product-image="{{ $product->image }}">
+                                        <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endforeach
+        </div>
+    </section>
+
     <!-- Special Offers -->
     <section class="special-offers py-5">
         <div class="container">
@@ -332,6 +400,8 @@
             </div>
         </div>
     </section>
+
+    
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://kit.fontawesome.com/your-kit-code.js" crossorigin="anonymous"></script>

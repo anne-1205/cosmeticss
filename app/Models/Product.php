@@ -16,17 +16,13 @@ class Product extends Model
      */
     protected $fillable = [
         'name',
-        'category',
+        'category_id', // Changed from 'category'
         'price',
         'stock',
-        'description',
+        'image'
     ];
-
-    /**
-     * Get the images associated with the product.
-     */
-    public function images()
-    {
-        return $this->hasMany(ProductImage::class);
-    }
+public function images()
+{
+    return $this->hasMany(ProductImage::class);
+}
 }
