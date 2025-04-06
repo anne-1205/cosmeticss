@@ -8,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body class="font-sans bg-gray-50">
     <div class="flex h-screen overflow-hidden">
@@ -58,12 +59,18 @@
             <main class="p-6">
                 <!-- Products Section -->
                 <div id="products-section" class="section-content">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-xl font-semibold text-gray-800">Products Management</h3>
-                        <button onclick="openProductModal()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
-                            <i class="fas fa-plus mr-2"></i>Add Product
-                        </button>
-                    </div>
+                       <!-- In the Products Section header -->
+<div class="flex justify-between items-center mb-6">
+    <h3 class="text-xl font-semibold text-gray-800">Products Management</h3>
+    <div class="space-x-3">
+        <button onclick="document.getElementById('file-input').click()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <i class="fas fa-file-import mr-2"></i>Import
+        </button>
+        <button onclick="openProductModal()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+            <i class="fas fa-plus mr-2"></i>Add Product
+        </button>
+    </div>
+</div>
 
                     <!-- Products Table -->
                     <div class="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
@@ -83,6 +90,10 @@
                         </table>
                     </div>
                 </div>
+
+
+<!-- Add hidden file input -->
+<input type="file" id="file-input" class="hidden" accept=".xlsx, .xls, .csv">
 
                 <!-- Users Section -->
                 <div id="users-section" class="section-content hidden">
@@ -234,6 +245,7 @@
             </div>
         </div>
     </div>
+    
 
     <!-- Confirmation Modal -->
     <div id="confirm-modal" class="fixed inset-0 z-50 hidden overflow-y-auto">
@@ -711,6 +723,77 @@
         function closeModal(modalId) {
             document.getElementById(modalId).classList.add('hidden');
         }
+
+        // Add this after the showToast function in the script section
+
+// Excel file import handler
+document.getElementById('file-input').addEventListener('change', handleFileUpload);
+
+function handleFileUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+
+        // Validate and format the data
+        const products = jsonData.map(item => ({
+            name: item.Product || item.product,
+            category: item.Category || item.category,
+            price: item.Price || item.price,
+            stock: item.Stock || item.stock
+        })).filter(p => p.name && p.category && p.price && p.stock);
+
+        if (products.length === 0) {
+            showToast('No valid products found in the file', 'error');
+            return;
+        }
+
+        importProducts(products);
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function importProducts(products) {
+    const saveBtn = document.querySelector('#confirm-modal button[onclick="confirmAction()"]');
+    const originalText = saveBtn.innerHTML;
+    
+    // Show loading state
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Importing...';
+    saveBtn.disabled = true;
+
+    fetch('/admin/products/import', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ products })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(`Successfully imported ${data.imported_count} products`, 'success');
+            loadProducts();
+        } else {
+            throw new Error(data.message || 'Import failed');
+        }
+    })
+    .catch(error => {
+        console.error('Import error:', error);
+        showToast(error.message || 'Error importing products', 'error');
+    })
+    .finally(() => {
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+        document.getElementById('file-input').value = ''; // Reset file input
+    });
+}
     </script>
 </body>
 </html>

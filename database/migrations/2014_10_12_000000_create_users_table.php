@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->foreignId('category_id')->constrained(); // This creates the relationship
+            $table->unsignedBigInteger('category_id'); 
+            $table->string('name'); // This creates the relationship
             $table->decimal('price', 8, 2);
             $table->integer('stock');
             $table->string('image');
