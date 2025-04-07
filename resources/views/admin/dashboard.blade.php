@@ -128,23 +128,17 @@
                     <div class="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortTable('name')">
-                                            Product <i class="fas fa-sort ml-1"></i>
-                                        </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortTable('category')">
-                                            Category <i class="fas fa-sort ml-1"></i>
-                                        </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortTable('price')">
-                                            Price <i class="fas fa-sort ml-1"></i>
-                                        </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortTable('stock')">
-                                            Stock <i class="fas fa-sort ml-1"></i>
-                                        </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                    </tr>
-                                </thead>
+                            <thead class="bg-gray-50">
+    <tr>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PRODUCT</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CATEGORY</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DESCRIPTION</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PRICE</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">STOCK</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ACTIONS</th>
+    </tr>
+</thead>
+
                                 <tbody class="bg-white divide-y divide-gray-200" id="products-table-body">
                                     <!-- Products will be loaded here -->
                                 </tbody>
@@ -441,6 +435,7 @@
                         valA = a.status;
                         valB = b.status;
                         break;
+                    
                     default:
                         valA = a.name.toLowerCase();
                         valB = b.name.toLowerCase();
@@ -1043,14 +1038,26 @@
                         <h4 class="text-md font-medium text-gray-900 mb-3">Order Items</h4>
                         <div class="bg-gray-50 rounded-lg overflow-hidden border border-gray-200">
                             <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-100">
-                                    <tr>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
-                                    </tr>
-                                </thead>
+                            <td class="px-6 py-4 whitespace-nowrap">
+    <div class="flex items-center">
+        ${product.image ? `
+            <div class="flex-shrink-0 h-10 w-10">
+                <img class="h-10 w-10 rounded-full object-cover" src="/storage/${product.image}" alt="${product.name}">
+            </div>
+        ` : ''}
+        <div class="ml-4">
+            <div class="text-sm font-medium text-gray-900">${product.name}</div>
+        </div>
+    </div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${getCategoryName(product.category_id)}</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 max-w-xs truncate">${product.description || 'No description'}</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${parseFloat(product.price).toFixed(2)}</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+    <span class="${product.stock > 0 ? (product.stock < 10 ? 'text-yellow-600' : 'text-green-600') : 'text-red-600'}">
+        ${product.stock}
+    </span>
+</td>
                                 <tbody id="order-items-body" class="bg-white divide-y divide-gray-200">
                                     <!-- Order items will be loaded here -->
                                 </tbody>
@@ -1923,6 +1930,11 @@
                             valA = getCategoryName(a.category_id).toLowerCase();
                             valB = getCategoryName(b.category_id).toLowerCase();
                             break;
+                        // In the sortTable function
+                        case 'description':
+                             valA = a.description.toLowerCase();
+                             valB = b.description.toLowerCase();
+                            break;
                         case 'price':
                             valA = parseFloat(a.price);
                             valB = parseFloat(b.price);
@@ -2230,9 +2242,16 @@
             formData.append('price', price);
             formData.append('stock', stock);
             formData.append('description', description);
-            if (image) {
-                formData.append('image', image);
-            }
+            if (id) {
+        const existingProduct = products.find(p => p.id == id);
+        if (existingProduct && !image) {
+            formData.append('existing_image', existingProduct.image);
+        }
+    }
+
+    if (image) {
+        formData.append('image', image);
+    }
 
             // Determine endpoint and method
             const url = id ? `/admin/products/${id}` : '/admin/products';

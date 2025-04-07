@@ -69,6 +69,7 @@ class Product extends Model
         return $query->where('is_active', true);
     }
 
+    
     /**
      * Scope a query to include both active and visible products.
      */

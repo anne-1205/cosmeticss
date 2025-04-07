@@ -10,21 +10,27 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string',
             'category_id' => 'required|exists:categories,id',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
-            'image' => 'nullable|image|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'description' => 'nullable|string',
         ]);
 
         $product = new Product();
         $product->name = $request->name;
         $product->category_id = $request->category_id;
+        $product->description = $request->description ?? ''; 
         $product->price = $request->price;
         $product->stock = $request->stock;
 
         if ($request->hasFile('image')) {
-            $product->image = $request->file('image')->store('products', 'public');
+            // Upload new image and update path
+        } elseif ($request->exists('existing_image')) {
+            $product->image = $request->input('existing_image');
+        } else {
+            // No image provided, keep existing or set to null
         }
 
         $product->save();
