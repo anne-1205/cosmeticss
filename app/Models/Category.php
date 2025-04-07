@@ -10,9 +10,9 @@ class Category extends Model
     use HasFactory;
 
     protected $fillable = ['name'];
-}
 
-\App\Models\Category::firstOrCreate(['name' => 'Lips']);
-\App\Models\Category::firstOrCreate(['name' => 'Face']);
-\App\Models\Category::firstOrCreate(['name' => 'Eyeshadow']);
-\App\Models\Category::firstOrCreate(['name' => 'Skin Care']);
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
+}

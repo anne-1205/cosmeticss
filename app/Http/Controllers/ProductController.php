@@ -31,4 +31,11 @@ class ProductController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Product added successfully']);
     }
+
+    public function success()
+{
+    // Fetch all orders or just display a success message
+    $orders = auth()->user()->orders()->latest()->get();
+    return view('checkout_success', compact('orders'));
+}
 }

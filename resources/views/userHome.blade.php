@@ -216,33 +216,39 @@
             padding: 0.25em 0.6em;
             font-size: 0.75rem;
         }
+
+        /* Add this new style for quantity input */
+        .quantity-input {
+            width: 60px;
+            display: inline-block;
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
+   <!-- Header -->
+   <header class="header">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <h1 class="m-0">HM Cosmetics</h1>
                 </div>
                 <div class="col-md-6">
-    <div class="auth-buttons d-flex align-items-center">
-    <a href="{{ route('cart.index') }}" class="btn btn-shop position-relative">
-    <i class="fas fa-shopping-cart"></i>
-    <span id="cart-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
-</a>
-        <img src="{{ Auth::user()->profile_photo ? asset('storage/' . Auth::user()->profile_photo) : asset('images/default-avatar.png') }}" 
-             alt="Profile Photo" 
-             class="rounded-circle me-3" 
-             style="width: 50px; height: 50px; object-fit: cover; border: 2px solid var(--primary-color);">
-        <a href="{{ route('profile.edit') }}" class="btn btn-login">Manage Profile</a>
-        <form method="POST" action="{{ route('logout') }}" class="d-inline">
-            @csrf
-            <button type="submit" class="btn btn-register">Log Out</button>
-        </form>
-    </div>
-</div>
+                    <div class="auth-buttons d-flex align-items-center">
+                        <a href="{{ route('cart.index') }}" class="btn btn-shop position-relative">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span id="cart-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
+                        </a>
+                        <img src="{{ Auth::user()->profile_photo ? asset('storage/' . Auth::user()->profile_photo) : asset('images/default-avatar.png') }}" 
+                             alt="Profile Photo" 
+                             class="rounded-circle me-3" 
+                             style="width: 50px; height: 50px; object-fit: cover; border: 2px solid var(--primary-color);">
+                             <a href="{{ route('profile.edit') }}" class="btn btn-login">Manage Profile</a>                        <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                            @csrf
+                            <button type="submit" class="btn btn-register">Log Out</button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
@@ -256,38 +262,86 @@
         </div>
     </section>
 
-    <!-- Featured Products -->
-    <section class="featured-products">
-        <div class="container">
-            <h2 class="text-center mb-5">Shop by Category</h2>
-            @foreach ($categories as $category)
-                <h3 class="text-center mt-4">{{ ucfirst($category->name) }}</h3>
-                <div class="row">
-                    @foreach ($products->where('category', $category->name) as $product)
-                        <div class="col-md-3">
-                            <div class="card product-card">
-                                <img src="{{ asset('storage/' . $product->image) }}" class="product-image" alt="{{ $product->name }}">
-                                <div class="card-body">
-                                    <h5 class="card-title">{{ $product->name }}</h5>
-                                    <p class="card-text">${{ number_format($product->price, 2) }}</p>
-                                    <div class="d-flex align-items-center mb-3">
-                                        <button class="btn btn-secondary me-2" onclick="updateQuantity('quantity-{{ $product->id }}', -1)">-</button>
-                                        <input type="number" id="quantity-{{ $product->id }}" class="form-control text-center" value="1" min="1" style="width: 60px;">
-                                        <button class="btn btn-secondary ms-2" onclick="updateQuantity('quantity-{{ $product->id }}', 1)">+</button>
-                                    </div>
-                                    <button class="btn btn-shop add-to-cart" 
-                                            data-product-id="{{ $product->id }}"
-                                            onclick="addToCart(this)">
-                                        <i class="fas fa-cart-plus me-2"></i>Add to Cart
-                                    </button>
-                                </div>
+<!-- Featured Products -->
+<section class="featured-products">
+    <div class="container">
+        <h2 class="text-center mb-5">Our Products</h2>
+        <div class="row">
+            @foreach($products as $product)
+                <div class="col-md-3 mb-4">
+                    <div class="card product-card">
+                        <!-- Product Image -->
+                        @if($product->image)
+                            <img src="{{ asset('storage/' . $product->image) }}" 
+                                 class="card-img-top product-image" 
+                                 alt="{{ $product->name }}">
+                        @else
+                            <div class="product-image-placeholder bg-light d-flex align-items-center justify-content-center">
+                                <i class="fas fa-box-open fa-3x text-muted"></i>
                             </div>
+                        @endif
+                        
+                        <div class="card-body">
+                            <!-- Product Name -->
+                            <h5 class="card-title">{{ $product->name }}</h5>
+                            
+                            <!-- Product Price -->
+                            <p class="card-text">${{ number_format($product->price, 2) }}</p>
+                            
+                            <!-- Add to Cart Button -->
+                            <button class="btn btn-primary add-to-cart"
+                                    data-product-id="{{ $product->id }}"
+                                    data-product-name="{{ $product->name }}"
+                                    data-product-price="{{ $product->price }}"
+                                    data-product-image="{{ $product->image ?? '' }}">
+                                <i class="fas fa-shopping-cart me-2"></i> Add to Cart
+                            </button>
                         </div>
-                    @endforeach
+                    </div>
                 </div>
             @endforeach
         </div>
-    </section>
+    </div>
+</section>
+
+<!-- Categories with their products -->
+<section class="category-section">
+    <div class="container">
+        <h2 class="text-center mb-5">Shop by Category</h2>
+        @foreach ($categories as $category)
+            <h3 class="text-center mt-4">{{ ucfirst($category->name) }}</h3>
+            <div class="row">
+                @foreach($category->products as $product)
+                    <div class="col-md-3 mb-4">
+                        <div class="card product-card">
+                            @if($product->image)
+                                <img src="{{ asset('storage/' . $product->image) }}" 
+                                     class="card-img-top product-image" 
+                                     alt="{{ $product->name }}">
+                            @else
+                                <div class="product-image-placeholder bg-light d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-box-open fa-3x text-muted"></i>
+                                </div>
+                            @endif
+                            
+                            <div class="card-body">
+                                <h5 class="card-title">{{ $product->name }}</h5>
+                                <p class="card-text">${{ number_format($product->price, 2) }}</p>
+                                <button class="btn btn-primary add-to-cart"
+                                        data-product-id="{{ $product->id }}"
+                                        data-product-name="{{ $product->name }}"
+                                        data-product-price="{{ $product->price }}"
+                                        data-product-image="{{ $product->image ?? '' }}">
+                                    <i class="fas fa-shopping-cart me-2"></i> Add to Cart
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @endforeach
+    </div>
+</section>
 
     <!-- Categories -->
     <section class="category-section">
@@ -351,33 +405,45 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://kit.fontawesome.com/your-kit-code.js" crossorigin="anonymous"></script>
     <script>
-function addToCart(button) {
-    const productId = button.getAttribute('data-product-id');
-    const quantityInput = document.getElementById(`quantity-${productId}`);
-    const quantity = parseInt(quantityInput?.value || 1);
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners to all "Add to Cart" buttons
+    document.querySelectorAll('.add-to-cart').forEach(button => {
+        button.addEventListener('click', function() {
+            const productId = this.getAttribute('data-product-id');
+            addToCart(productId);
+        });
+    });
 
-    fetch('/cart/add', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-        },
-        body: JSON.stringify({
-            product_id: productId,
-            quantity: quantity,
-        }),
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert(data.message);
-            updateCartCount();
-        } else {
-            alert('Failed to add product to cart.');
-        }
-    })
-    .catch(error => console.error('Error:', error));
-}
+    function addToCart(productId) {
+        fetch('/cart/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            },
+            body: JSON.stringify({
+                product_id: productId,
+                quantity: 1, // Default quantity
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Redirect to cart page after successful addition
+                window.location.href = "{{ route('cart.index') }}";
+            } else {
+                alert(data.message || 'Failed to add product to cart.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while adding to cart.');
+        });
+    }
+
+    // Initialize cart count on page load
+    updateCartCount();
+});
 
 function updateCartCount() {
     fetch('/cart/count', {
@@ -391,10 +457,8 @@ function updateCartCount() {
         document.getElementById('cart-count').textContent = data.count;
     });
 }
-
-// Initialize cart count on page load
-document.addEventListener('DOMContentLoaded', updateCartCount);
 </script>
+
 </body>
 </html>
 

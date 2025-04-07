@@ -72,14 +72,15 @@ class CheckoutController extends Controller
         return redirect()->route('checkout.success', $order->id);
     }
 
-    public function success(Order $order)
-    {
-        if ($order->user_id !== Auth::id()) {
-            abort(403);
-        }
 
-        return view('checkout_success', compact('order'));
-    }
+
+    public function success()
+{
+    // Get all orders or whatever logic you need
+    $orders = Order::where('user_id', auth()->id())->get();
+    
+    return view('checkout_success', compact('orders'));
+}
 
     public function show(Order $order)
     {
@@ -87,6 +88,6 @@ class CheckoutController extends Controller
             abort(403);
         }
 
-        return view('checkout', compact('order'));
+        return view('checkout.show ', compact('order'));
     }
 }

@@ -207,11 +207,11 @@
                     <h1 class="m-0">HM Cosmetics</h1>
                 </div>
                 <div class="col-md-6">
-                    <div class="auth-buttons">
-                        <a href="{{ route('login') }}" class="btn btn-login">Login</a>
-                        <a href="{{ route('register') }}" class="btn btn-register">Register</a>
-                    </div>
-                </div>
+    <div class="auth-buttons">
+        <a href="{{ route('login') }}" class="btn btn-login" onclick="event.preventDefault(); window.location.href='{{ route('login') }}'">Login</a>
+        <a href="{{ route('register') }}" class="btn btn-register">Register</a>
+    </div>
+</div>
             </div>
         </div>
     </header>

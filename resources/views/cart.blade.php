@@ -147,6 +147,10 @@
                     <a href="{{ route('user.home') }}" class="btn btn-shop me-2">
                         <i class="fas fa-home me-2"></i>Home
                     </a>
+            
+                    <a href="{{ route('orders.index') }}" class="btn btn-shop me-2">
+                        <i class="fas fa-clipboard-list me-2"></i>Orders
+                    </a>
                     <a href="#" class="btn btn-shop position-relative">
                         <i class="fas fa-shopping-cart"></i>
                         <span id="cart-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
@@ -156,18 +160,10 @@
         </div>
     </header>
     
-    <!DOCTYPE html>
-<html lang="en">
-<head>
-    <!-- Previous head content remains the same -->
-</head>
-<body>
-    <!-- Previous header content remains the same -->
-    
     <div class="container py-5">
         <h2 class="mb-4 text-center">Your Shopping Cart</h2>
         <div class="row">
-            <div class="col-md-8">
+            <div class="col-md-8" id="cart-items-container">
                 @forelse ($cartItems as $item)
                     <div class="card cart-item">
                         <div class="card-body">
@@ -205,22 +201,33 @@
                     </div>
                 @endforelse
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4" id="order-summary-container">
                 <div class="order-summary">
                     <h5 class="text-center">Order Summary</h5>
+                    @php
+                        $subtotal = 0;
+                        foreach ($cartItems as $item) {
+                            $subtotal += $item->product->price * $item->quantity;
+                        }
+                        $shipping = 5.00;
+                        $total = $subtotal + $shipping;
+                    @endphp
+
                     <div class="d-flex justify-content-between mb-3">
                         <span>Subtotal:</span>
-                        <span id="subtotal">₱{{ number_format($cartItems->sum(fn($item) => $item->product->price * $item->quantity), 2) }}</span>
+                        <span id="subtotal">₱{{ number_format($subtotal, 2) }}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-3">
                         <span>Shipping:</span>
-                        <span id="shipping">₱5.00</span>
+                        <span id="shipping">₱{{ number_format($shipping, 2) }}</span>
                     </div>
                     <hr>
                     <div class="d-flex justify-content-between mb-4">
                         <strong>Total:</strong>
-                        <strong id="total">₱{{ number_format($cartItems->sum(fn($item) => $item->product->price * $item->quantity) + 5, 2) }}</strong>
+                        <strong id="total">₱{{ number_format($total, 2) }}</strong>
                     </div>
+
+                    
                     @if($cartItems->isNotEmpty())
                         <a href="{{ route('checkout.index') }}" class="btn btn-checkout">
                             <i class="fas fa-lock me-2"></i>PROCEED TO CHECKOUT
@@ -231,11 +238,34 @@
         </div>
     </div>
 
-   
-</body>
-</html>
-
     <script>
+        // Function to refresh the entire cart
+        function refreshCart() {
+            fetch('/cart/content')
+                .then(response => response.text())
+                .then(html => {
+                    // Create a temporary container to parse the HTML
+                    const tempContainer = document.createElement('div');
+                    tempContainer.innerHTML = html;
+                    
+                    // Update the cart items section
+                    const newCartItems = tempContainer.querySelector('#cart-items-container');
+                    if (newCartItems) {
+                        document.getElementById('cart-items-container').innerHTML = newCartItems.innerHTML;
+                    }
+                    
+                    // Update the order summary section
+                    const newOrderSummary = tempContainer.querySelector('#order-summary-container');
+                    if (newOrderSummary) {
+                        document.getElementById('order-summary-container').innerHTML = newOrderSummary.innerHTML;
+                    }
+                    
+                    // Update cart count
+                    updateCartCount();
+                })
+                .catch(error => console.error('Error refreshing cart:', error));
+        }
+
         function updateQuantity(cartId, change) {
             const quantityInput = document.querySelector(`input[data-cart-id="${cartId}"]`);
             let currentQuantity = parseInt(quantityInput.value);
@@ -258,15 +288,8 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Update the quantity input field
-                    quantityInput.value = newQuantity;
-
-                    // Update the subtotal for the item
-                    const subtotalElement = document.querySelector(`p[data-cart-id="${cartId}"]`);
-                    subtotalElement.textContent = `$${data.subtotal.toFixed(2)}`;
-
-                    // Update the overall subtotal and total
-                    updateCartSummary();
+                    // Instead of updating individual elements, refresh the entire cart
+                    refreshCart();
                 } else {
                     alert(data.message);
                 }
@@ -274,44 +297,46 @@
             .catch(error => console.error('Error:', error));
         }
 
-        function updateCartSummary() {
-            const cartItems = document.querySelectorAll('.cart-item');
-            let subtotal = 0;
-
-            cartItems.forEach(item => {
-                const itemSubtotal = parseFloat(item.querySelector('.item-subtotal').textContent.replace('$', ''));
-                subtotal += itemSubtotal;
-            });
-
-            document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
-            document.getElementById('total').textContent = `$${(subtotal + 5).toFixed(2)}`; // Add shipping cost
-        }
-
-        function removeItem(productId) {
-            let cart = JSON.parse(localStorage.getItem('cart')) || [];
-            cart = cart.filter(item => item.id !== productId);
-            localStorage.setItem('cart', JSON.stringify(cart));
-            displayCart();
-        }
-
-        function checkout() {
-            const cart = JSON.parse(localStorage.getItem('cart')) || [];
-            if (cart.length === 0) {
-                alert('Your cart is empty. Please add items before checkout.');
-                return;
+        function removeItem(cartId) {
+            if (confirm('Are you sure you want to remove this item from your cart?')) {
+                fetch('/cart/remove', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                    body: JSON.stringify({
+                        cart_id: cartId,
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Refresh the entire cart
+                        refreshCart();
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
             }
-            alert('Proceeding to checkout...');
         }
 
         function updateCartCount() {
-            const cart = JSON.parse(localStorage.getItem('cart')) || [];
-            const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
-            document.getElementById('cart-count').textContent = cartCount;
+            fetch('/cart/count')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('cart-count').textContent = data.count;
+                })
+                .catch(error => console.error('Error:', error));
         }
 
         // Initialize cart count on page load
         document.addEventListener('DOMContentLoaded', () => {
             updateCartCount();
+            
+            // Set up periodic refresh (optional)
+            // setInterval(refreshCart, 30000); // Refresh every 30 seconds
         });
     </script>
 </body>
