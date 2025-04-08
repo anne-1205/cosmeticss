@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,13 +36,13 @@ Route::get('/', function () {
 
 // Admin Dashboard Route
 Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])
-    ->middleware(['auth', 'verified', 'admin'])
-    ->name('admin.dashboard');
-
-Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard')->middleware('auth');
+    ->name('admin.dashboard')
+    ->middleware(['auth', 'verified', 'admin']); // Ensure 'admin' middleware is applied
 
 // User Home Route
-Route::get('/user/home', [UserHomeController::class, 'index'])->name('user.home')->middleware('auth');
+Route::get('/user/home', [UserHomeController::class, 'index'])
+    ->name('user.home')
+    ->middleware(['auth']);
 
 // Original Dashboard Route (kept for compatibility, but you can remove if not needed)
 Route::get('/dashboard', function () {
@@ -132,6 +133,18 @@ Route::get('/email/verify', function () {
 
 Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
     $request->fulfill();
-    return redirect('/home');
+
+    // Redirect based on user role
+    $user = auth()->user();
+    if ($user->role === 'admin') {
+        return redirect()->route('admin.dashboard'); // Admin dashboard route
+    }
+
+    return redirect()->route('user.home'); // Customer dashboard route
 })->middleware(['auth', 'signed'])->name('verification.verify');
 
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+});
+
+Route::delete('/admin/products/{product}', [ProductController::class, 'destroy'])->name('admin.products.destroy');

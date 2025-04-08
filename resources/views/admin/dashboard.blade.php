@@ -140,8 +140,39 @@
 </thead>
 
                                 <tbody class="bg-white divide-y divide-gray-200" id="products-table-body">
-                                    <!-- Products will be loaded here -->
-                                </tbody>
+    @foreach ($products as $product)
+        <tr class="hover:bg-gray-50">
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                    @if ($product->image)
+                        <div class="flex-shrink-0 h-10 w-10">
+                            <img class="h-10 w-10 rounded-full object-cover" src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}">
+                        </div>
+                    @endif
+                    <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-900">{{ $product->name }}</div>
+                    </div>
+                </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product->category->name ?? 'Uncategorized' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product->description ?? 'No description' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($product->price, 2) }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <span class="{{ $product->stock > 0 ? ($product->stock < 10 ? 'text-yellow-600' : 'text-green-600') : 'text-red-600' }}">
+                    {{ $product->stock }}
+                </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <button onclick="editProduct({{ $product->id }})" class="text-purple-600 hover:text-purple-900 mr-3">Edit</button>
+                <form action="{{ route('admin.products.destroy', $product->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this product?');">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                </form>
+            </td>
+        </tr>
+    @endforeach
+</tbody>
                             </table>
                         </div>
                         <!-- Pagination -->
@@ -1051,7 +1082,9 @@
     </div>
 </td>
 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${getCategoryName(product.category_id)}</td>
-<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 max-w-xs truncate">${product.description || 'No description'}</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 max-w-xs truncate">
+    {{ $product->description ?? 'No description' }}
+</td>
 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${parseFloat(product.price).toFixed(2)}</td>
 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
     <span class="${product.stock > 0 ? (product.stock < 10 ? 'text-yellow-600' : 'text-green-600') : 'text-red-600'}">
@@ -1333,37 +1366,6 @@
                         'processing': 'bg-blue-100 text-blue-800',
                         'completed': 'bg-green-100 text-green-800',
                         'cancelled': 'bg-red-100 text-red-800'
-                    }[order.status] || 'bg-gray-100 text-gray-800';
-                    
-                    const tr = document.createElement('tr');
-                    tr.className = 'hover:bg-gray-50';
-                    tr.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#${order.id}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${order.customer_name}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₱${order.total.toFixed(2)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusClass} capitalize">${order.status}</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(order.created_at)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button onclick="viewOrderDetails(${order.id})" class="text-purple-600 hover:text-purple-900">View</button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            }
-            
-            // Update pagination controls
-            updateOrderPaginationControls();
-            
-        }, 500); // Simulate network delay
-    }
-
-    // Update order pagination controls
-    function updateOrderPaginationControls() {
-        const totalPages = Math.ceil(totalOrders / ordersPerPage);
-        const startItem = ((currentOrderPage - 1) * ordersPerPage) + 1;
-        const endItem = Math.min(currentOrderPage * ordersPerPage, totalOrders);
         
         // Update pagination info
         document.getElementById('order-pagination-info').innerHTML = `
@@ -1997,8 +1999,12 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <button onclick="editProduct(${product.id})" class="text-purple-600 hover:text-purple-900 mr-3">Edit</button>
-                                <button onclick="deleteProduct(${product.id})" class="text-red-600 hover:text-red-900">Delete</button>
+                                <button onclick="editProduct({{ $product->id }})" class="text-purple-600 hover:text-purple-900 mr-3">Edit</button>
+                                <form action="{{ route('admin.products.destroy', $product->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this product?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                </form>
                             </td>
                         `;
                         tbody.appendChild(tr);

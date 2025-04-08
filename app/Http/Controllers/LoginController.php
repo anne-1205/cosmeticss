@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
 {
@@ -43,6 +44,37 @@ class LoginController extends Controller
             'token_type' => 'Bearer',
             'role' => $user->role,
             'user' => $user,
+        ]);
+    }
+
+    protected function attemptLogin(Request $request)
+    {
+        $credentials = $request->only($this->username(), 'password');
+
+        // Check if the user exists and is active
+        $user = User::where($this->username(), $credentials[$this->username()])->first();
+        if (!$user || $user->status !== 'active') {
+            dd('User is inactive');
+            return false; // Prevent login if the user is inactive
+        }
+
+        return $this->guard()->attempt(
+            $this->credentials($request), $request->filled('remember')
+        );
+    }
+
+    protected function sendFailedLoginResponse(Request $request)
+    {
+        $user = User::where($this->username(), $request->{$this->username()})->first();
+
+        if ($user && $user->status !== 'active') {
+            throw ValidationException::withMessages([
+                $this->username() => [trans('auth.inactive')],
+            ]);
+        }
+
+        throw ValidationException::withMessages([
+            $this->username() => [trans('auth.failed')],
         ]);
     }
 }
