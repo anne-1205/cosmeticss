@@ -927,221 +927,74 @@
                <!-- Orders Section -->
 {{-- filepath: c:\xampp\htdocs\LaravelHMcosmetics\cosmeticss\resources\views\admin\dashboard.blade.php --}}
 {{-- filepath: c:\xampp\htdocs\LaravelHMcosmetics\cosmeticss\resources\views\admin\dashboard.blade.php --}}
-<div id="orders-section" class="section-content">
+{{-- filepath: c:\xampp\htdocs\LaravelHMcosmetics\resources\views\admin\dashboard.blade.php --}}
+<!-- Orders Section -->
+<div id="orders-section" class="section-content hidden">
     <div class="flex justify-between items-center mb-6">
         <h3 class="text-xl font-semibold text-gray-800">Orders Management</h3>
-        <button onclick="exportOrders()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-            <i class="fas fa-file-export mr-2"></i>Export Orders
-        </button>
-    </div>
-
-    <!-- Search and Filter -->
-    <div class="bg-white p-4 rounded-lg shadow border border-gray-200 mb-4">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
-                <input type="text" id="order-search" placeholder="Order ID or customer..." 
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select id="status-filter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
-                    <option value="">All Statuses</option>
-                    <option value="pending">Pending</option>
-                    <option value="processing">Processing</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
-                <div class="flex space-x-2">
-                    <input type="date" id="start-date" placeholder="Start date" 
-                        class="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
-                    <input type="date" id="end-date" placeholder="End date" 
-                        class="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
-                </div>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Total Range</label>
-                <div class="flex space-x-2">
-                    <input type="number" id="min-total" placeholder="Min" 
-                        class="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
-                    <input type="number" id="max-total" placeholder="Max" 
-                        class="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
-                </div>
-            </div>
-        </div>
-        <div class="mt-3 flex justify-end">
-            <button onclick="resetOrderFilters()" class="px-3 py-1 text-sm text-gray-600 hover:text-gray-800">
-                Reset Filters
-            </button>
-            <button onclick="applyOrderFilters()" class="ml-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
-                Apply
-            </button>
-        </div>
     </div>
 
     <!-- Orders Table -->
-    <div class="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="orders-table-body" class="bg-white divide-y divide-gray-200">
-                    @foreach($orders as $order)
-                    <tr data-order-id="{{ $order->id }}">
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $order->id }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            {{ $order->user->name ?? 'Guest' }}<br>
-                            <small class="text-gray-500">{{ $order->contact_number }}</small>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">₱{{ number_format($order->total, 2) }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 py-1 text-xs font-semibold rounded-full 
-                                {{ $order->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                                   ($order->status === 'processing' ? 'bg-blue-100 text-blue-800' : 
-                                   ($order->status === 'completed' ? 'bg-green-100 text-green-800' : 
-                                   'bg-red-100 text-red-800')) }}">
-                                {{ ucfirst($order->status) }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $order->created_at->format('Y-m-d H:i') }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button onclick="viewOrderDetails({{ $order->id }})" class="text-blue-600 hover:text-blue-900 mr-3">View</button>
-                            <button onclick="deleteOrder({{ $order->id }})" class="text-red-600 hover:text-red-900">Delete</button>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-        <!-- Pagination -->
-        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-            {{ $orders->links() }}
-        </div>
+   <!-- Orders Table -->
+<div class="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order ID</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Subtotal</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Shipping</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Shipping Address</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Notes</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            @forelse ($orders as $order)
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">{{ $order->id }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">{{ $order->user->name ?? 'Guest' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">{{ $order->contact_number }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">₱{{ number_format($order->subtotal, 2) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">₱{{ number_format($order->shipping, 2) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">₱{{ number_format($order->total, 2) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full 
+                            {{ $order->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                               ($order->status === 'processing' ? 'bg-blue-100 text-blue-800' : 
+                               ($order->status === 'completed' ? 'bg-green-100 text-green-800' : 
+                               'bg-red-100 text-red-800')) }}">
+                            {{ ucfirst($order->status) }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">{{ $order->shipping_address }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">{{ $order->notes ?? 'N/A' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">{{ $order->created_at->format('Y-m-d H:i') }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="editOrder({{ $order->id }})" class="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
+                        <button onclick="deleteOrder({{ $order->id }})" class="text-red-600 hover:text-red-900">Delete</button>
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="11" class="px-6 py-4 text-center text-gray-500">No orders found.</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="bg-white px-4 py-3 border-t border-gray-200">
+        {{ $orders->links() }}
     </div>
 </div>
 
-    <!-- Search and Filter -->
-    <div class="bg-white p-4 rounded-lg shadow border border-gray-200 mb-4">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
-                <input type="text" id="order-search" placeholder="Order ID or user..." 
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select id="status-filter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
-                    <option value="">All Statuses</option>
-                    <option value="pending">Pending</option>
-                    <option value="processing">Processing</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
-                <div class="flex space-x-2">
-                    <input type="date" id="start-date" placeholder="Start date" 
-                        class="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
-                    <input type="date" id="end-date" placeholder="End date" 
-                        class="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
-                </div>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Total Range</label>
-                <div class="flex space-x-2">
-                    <input type="number" id="min-total" placeholder="Min" 
-                        class="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
-                    <input type="number" id="max-total" placeholder="Max" 
-                        class="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
-                </div>
-            </div>
-        </div>
-        <div class="mt-3 flex justify-end">
-            <button onclick="resetOrderFilters()" class="px-3 py-1 text-sm text-gray-600 hover:text-gray-800">
-                Reset Filters
-            </button>
-            <button onclick="applyOrderFilters()" class="ml-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
-                Apply
-            </button>
-        </div>
-    </div>
-
+    
     <!-- Orders Table -->
-    <div class="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortOrderTable('id')">
-                            Order ID <i class="fas fa-sort ml-1"></i>
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortOrderTable('user_id')">
-                            Customer <i class="fas fa-sort ml-1"></i>
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortOrderTable('total')">
-                            Total <i class="fas fa-sort ml-1"></i>
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortOrderTable('status')">
-                            Status <i class="fas fa-sort ml-1"></i>
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortOrderTable('created_at')">
-                            Date <i class="fas fa-sort ml-1"></i>
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="orders-table-body" class="bg-white divide-y divide-gray-200">
-                    <!-- Orders will be dynamically loaded here -->
-                </tbody>
-            </table>
-        </div>
-        <!-- Pagination -->
-        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-            <div class="flex-1 flex justify-between sm:hidden">
-                <button onclick="previousOrderPage()" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                    Previous
-                </button>
-                <button onclick="nextOrderPage()" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                    Next
-                </button>
-            </div>
-            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                <div>
-                    <p class="text-sm text-gray-700" id="order-pagination-info">
-                        Showing <span class="font-medium">1</span> to <span class="font-medium">10</span> of <span class="font-medium">20</span> results
-                    </p>
-                </div>
-                <div>
-                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                        <button onclick="previousOrderPage()" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                            <span class="sr-only">Previous</span>
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
-                        <div id="order-page-numbers" class="flex">
-                            <!-- Page numbers will be inserted here -->
-                        </div>
-                        <button onclick="nextOrderPage()" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                            <span class="sr-only">Next</span>
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
-                    </nav>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- Order Details Modal -->
 <div id="order-modal" class="fixed inset-0 z-50 hidden overflow-y-auto">
@@ -1261,6 +1114,7 @@
         </div>
     </div>
 </div>
+
 
 <script>
     // Orders-specific variables
@@ -1506,7 +1360,121 @@
             addOrderPageNumber(totalPages, currentOrderPage === totalPages);
         }
     }
-    
+    function editOrder(orderId) {
+    // Fetch order details and populate the edit modal
+    console.log('Editing order:', orderId);
+    // Implement your edit logic here
+}
+
+function deleteOrder(orderId) {
+    if (confirm('Are you sure you want to delete this order?')) {
+        // Implement your delete logic here
+        fetch(`/admin/orders/${orderId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            },
+        })
+        .then(response => {
+            if (response.ok) {
+                showToast('Order deleted successfully', 'success');
+                // Refresh the orders table
+                loadOrders(currentOrderPage, currentOrderFilters);
+            } else {
+                showToast('Failed to delete order', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('An error occurred while deleting the order', 'error');
+        });
+    }
+}
+
+
+
+    <tbody class="bg-white divide-y divide-gray-200">
+    @forelse ($orders as $order)
+        <tr>
+            <td class="px-6 py-4 whitespace-nowrap">{{ $order->id }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ $order->user->name ?? 'Guest' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ $order->contact_number }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">₱{{ number_format($order->subtotal, 2) }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">₱{{ number_format($order->shipping, 2) }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">₱{{ number_format($order->total, 2) }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 text-xs font-semibold rounded-full 
+                    {{ $order->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                       ($order->status === 'processing' ? 'bg-blue-100 text-blue-800' : 
+                       ($order->status === 'completed' ? 'bg-green-100 text-green-800' : 
+                       'bg-red-100 text-red-800')) }}">
+                    {{ ucfirst($order->status) }}
+                </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ $order->shipping_address }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ $order->notes ?? 'N/A' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ $order->created_at->format('Y-m-d H:i') }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <button onclick="editOrder({{ $order->id }})" class="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
+                <button onclick="deleteOrder({{ $order->id }})" class="text-red-600 hover:text-red-900">Delete</button>
+            </td>
+        </tr>
+    @empty
+        <tr>
+            <td colspan="11" class="px-6 py-4 text-center text-gray-500">No orders found.</td>
+        </tr>
+    @endforelse
+</tbody>
+
+function editOrder(orderId) {
+    // Fetch order details from the server
+    fetch(`/admin/orders/${orderId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const order = data.order;
+
+                // Populate modal fields with order details
+                document.getElementById('order-id').textContent = order.id;
+                document.getElementById('order-date').textContent = order.created_at;
+                document.getElementById('order-status').value = order.status;
+                document.getElementById('order-subtotal').textContent = `₱${order.subtotal.toFixed(2)}`;
+                document.getElementById('order-shipping').textContent = `₱${order.shipping.toFixed(2)}`;
+                document.getElementById('order-total').textContent = `₱${order.total.toFixed(2)}`;
+                document.getElementById('shipping-address').textContent = order.shipping_address;
+                document.getElementById('order-notes').textContent = order.notes || 'No notes';
+                document.getElementById('customer-name').textContent = order.user?.name || 'Guest';
+                document.getElementById('customer-contact').textContent = order.contact_number;
+
+                // Show the modal
+                document.getElementById('order-modal').classList.remove('hidden');
+            } else {
+                alert('Failed to load order details.');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+function deleteOrder(orderId) {
+    if (confirm('Are you sure you want to delete this order?')) {
+        fetch(`/admin/orders/${orderId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            },
+        })
+            .then(response => {
+                if (response.ok) {
+                    alert('Order deleted successfully!');
+                    location.reload(); // Reload the page to reflect changes
+                } else {
+                    alert('Failed to delete order.');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+}
+
     function addOrderPageNumber(pageNumber, isActive) {
         const pageNumbersContainer = document.getElementById('order-page-numbers');
         const pageButton = document.createElement('button');
@@ -1569,36 +1537,26 @@
     }
 
    // Orders Management Functions
-function viewOrderDetails(orderId) {
-    // Show loading state
-    const modal = document.getElementById('order-modal');
-    modal.classList.remove('hidden');
-    document.getElementById('order-modal-content').innerHTML = `
-        <div class="flex justify-center py-8">
-            <i class="fas fa-spinner fa-spin text-purple-600 text-2xl"></i>
-        </div>
-    `;
-
-    // Fetch order details from server
+   function viewOrderDetails(orderId) {
+    // Fetch order details from the server
     fetch(`/admin/orders/${orderId}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                populateOrderModal(data.order);
+                // Populate modal with order details
+                const modal = document.getElementById('order-modal');
+                modal.querySelector('#order-id').textContent = data.order.id;
+                modal.querySelector('#order-subtotal').textContent = `₱${data.order.subtotal}`;
+                modal.querySelector('#order-shipping').textContent = `₱${data.order.shipping}`;
+                modal.querySelector('#order-total').textContent = `₱${data.order.total}`;
+                modal.querySelector('#order-status').value = data.order.status;
+                modal.classList.remove('hidden');
             } else {
-                throw new Error(data.message || 'Failed to load order details');
+                alert('Failed to load order details.');
             }
         })
-        .catch(error => {
-            console.error('Error:', error);
-            document.getElementById('order-modal-content').innerHTML = `
-                <div class="p-4 text-red-500">
-                    Error loading order details: ${error.message}
-                </div>
-            `;
-        });
+        .catch(error => console.error('Error:', error));
 }
-
 function populateOrderModal(order) {
     const formattedDate = new Date(order.created_at).toLocaleString('en-US', {
         year: 'numeric',
@@ -1711,49 +1669,22 @@ function populateOrderModal(order) {
 }
 
 function deleteOrder(orderId) {
-    if (confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
-        // Show loading state
-        const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
-        if (row) {
-            row.innerHTML = `
-                <td colspan="6" class="px-6 py-4 text-center">
-                    <div class="flex justify-center">
-                        <i class="fas fa-spinner fa-spin text-purple-600 text-2xl"></i>
-                    </div>
-                </td>
-            `;
-        }
-
-        // Send delete request to server
+    if (confirm('Are you sure you want to delete this order?')) {
         fetch(`/admin/orders/${orderId}`, {
             method: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'X-Requested-With': 'XMLHttpRequest'
-            }
+            },
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showToast('Order deleted successfully', 'success');
-                if (row) {
-                    row.remove();
+            .then(response => {
+                if (response.ok) {
+                    alert('Order deleted successfully!');
+                    location.reload();
+                } else {
+                    alert('Failed to delete order.');
                 }
-            } else {
-                throw new Error(data.message || 'Failed to delete order');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast(error.message || 'Failed to delete order', 'error');
-            if (row) {
-                row.innerHTML = `
-                    <td colspan="6" class="px-6 py-4 text-center text-red-500">
-                        Error: ${error.message}
-                    </td>
-                `;
-            }
-        });
+            })
+            .catch(error => console.error('Error:', error));
     }
 }
 

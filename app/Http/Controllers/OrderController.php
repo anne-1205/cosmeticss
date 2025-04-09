@@ -7,9 +7,11 @@ use App\Models\Order;
 
 class OrderController extends Controller
 {
+    /**
+     * Display the orders with pagination.
+     */
     public function index()
     {
-        // Fetch orders with pagination
         $orders = Order::with('user') // Assuming 'user' is the relationship to the User model
             ->latest()
             ->paginate(10); // Adjust the pagination as needed
@@ -17,17 +19,43 @@ class OrderController extends Controller
         return view('admin.dashboard', compact('orders'));
     }
 
+    /**
+     * Show the details of a specific order.
+     */
     public function show(Order $order)
     {
-        // Ensure the order belongs to the authenticated user
-        if ($order->user_id !== auth()->id()) {
-            abort(403);
-        }
-
-        return view('checkout', [
-            'order' => $order,
-            'items' => $order->items,
-            'total' => $order->total
+        return response()->json([
+            'success' => true,
+            'order' => $order->load('user') // Include user details
         ]);
+    }
+
+    /**
+     * Update the details of a specific order.
+     */
+    public function update(Request $request, Order $order)
+    {
+        $validated = $request->validate([
+            'status' => 'required|string|in:pending,processing,completed,cancelled',
+            'shipping_address' => 'nullable|string|max:255',
+            'notes' => 'nullable|string|max:255',
+        ]);
+
+        $order->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Order updated successfully!',
+        ]);
+    }
+
+    /**
+     * Delete a specific order.
+     */
+    public function destroy(Order $order)
+    {
+        $order->delete();
+
+        return redirect()->route('admin.dashboard')->with('success', 'Order deleted successfully!');
     }
 }

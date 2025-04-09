@@ -140,9 +140,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
-Route::delete('/admin/products/{product}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
-
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/orders', [OrderController::class, 'index'])->name('admin.orders.index');
+    Route::get('/admin/orders/{order}', [OrderController::class, 'show'])->name('admin.orders.show');
+    Route::put('/admin/orders/{order}', [OrderController::class, 'update'])->name('admin.orders.update');
     Route::delete('/admin/orders/{order}', [OrderController::class, 'destroy'])->name('admin.orders.destroy');
 });

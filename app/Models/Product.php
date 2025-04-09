@@ -21,9 +21,7 @@ class Product extends Model
         'description',
         'price',
         'stock',
-        'image',
-        'is_active',
-        'is_visible'
+        'image'
     ];
 
     /**
@@ -78,6 +76,9 @@ class Product extends Model
         return $query->active()->visible();
     }
 
+    /**
+     * Define the relationship to the category this product belongs to.
+     */
     public function category()
     {
         return $this->belongsTo(Category::class);

@@ -20,9 +20,6 @@ class Order extends Model
         'notes',
     ];
 
-    /**
-     * Define the relationship to the user who placed the order.
-     */
     public function user()
     {
         return $this->belongsTo(User::class);

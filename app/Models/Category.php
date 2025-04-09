@@ -10,4 +10,12 @@ class Category extends Model
     use HasFactory;
 
     protected $fillable = ['name', 'description'];
+
+    /**
+     * Define the relationship to the products in this category.
+     */
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
 }
