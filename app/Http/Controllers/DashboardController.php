@@ -1,24 +1,24 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use Illuminate\Http\Request;
-use App\Http\Requests;
-use App\Http\Controllers\Controller;
-use App\Models\Product;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
+use App\Models\Order;
 use App\Models\Category;
+use App\Models\Product; // Import the Product model
 
 class DashboardController extends Controller
 {
     /**
      * Display the dashboard.
      */
-public function index()
-{
-    $products = Product::all(); // Fetch all products from the database
-    $categories = Category::all(); // Fetch all categories if needed
+    public function index()
+    {
+        // Fetch orders with pagination
+        $categories = Category::all();
+        $orders = Order::with('user')->latest()->paginate(10); // Adjust pagination as needed
+        $products = Product::with('category')->get(); // Fetch products with their categories
 
-    return view('admin.dashboard', compact('products', 'categories'));
-}
+        return view('admin.dashboard', compact('orders', 'categories', 'products'));
+    }
 }

@@ -50,16 +50,14 @@ class User extends Authenticatable implements MustVerifyEmail
     public function markEmailAsVerified()
     {
         if ($this->email_verified_at) {
-            Log::info('Email already verified for user: ' . $this->id);
             return false;
         }
+
+        Log::info('Verifying email for user: ' . $this->id);
 
         $this->forceFill([
             'email_verified_at' => $this->freshTimestamp(),
         ])->save();
-
-        // Debugging: Log or dump a message
-        Log::info('Email verified for user: ' . $this->id);
 
         return true;
     }

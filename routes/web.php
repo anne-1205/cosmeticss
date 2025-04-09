@@ -18,6 +18,7 @@ use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Auth\VerifyEmailController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,9 +36,9 @@ Route::get('/', function () {
 });
 
 // Admin Dashboard Route
-Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])
+Route::get('/admin/dashboard', [DashboardController::class, 'index'])
     ->name('admin.dashboard')
-    ->middleware(['auth', 'verified', 'admin']); // Ensure 'admin' middleware is applied
+    ->middleware(['auth', 'verified', 'admin']);
 
 // User Home Route
 Route::get('/user/home', [UserHomeController::class, 'index'])
@@ -131,20 +132,17 @@ Route::get('/email/verify', function () {
     return view('auth.verify-email');
 })->middleware('auth')->name('verification.notice');
 
-Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-    $request->fulfill();
-
-    // Redirect based on user role
-    $user = auth()->user();
-    if ($user->role === 'admin') {
-        return redirect()->route('admin.dashboard'); // Admin dashboard route
-    }
-
-    return redirect()->route('user.home'); // Customer dashboard route
-})->middleware(['auth', 'signed'])->name('verification.verify');
+Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, '__invoke'])
+    ->middleware(['auth', 'signed'])
+    ->name('verification.verify');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
 Route::delete('/admin/products/{product}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
+
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin/orders', [OrderController::class, 'index'])->name('admin.orders.index');
+    Route::delete('/admin/orders/{order}', [OrderController::class, 'destroy'])->name('admin.orders.destroy');
+});

@@ -39,9 +39,15 @@ class ProductController extends Controller
     }
 
     public function success()
-{
-    // Fetch all orders or just display a success message
-    $orders = auth()->user()->orders()->latest()->get();
-    return view('checkout_success', compact('orders'));
-}
+    {
+        // Fetch all orders or just display a success message
+        $orders = auth()->user()->orders()->latest()->get();
+        return view('checkout_success', compact('orders'));
+    }
+
+    public function dashboard()
+    {
+        $products = Product::with('category')->get(); // Include category relationship
+        return view('admin.dashboard', ['products' => $products]);
+    }
 }

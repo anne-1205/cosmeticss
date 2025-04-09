@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/tailwind.css">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -127,52 +128,53 @@
                     <!-- Products Table -->
                     <div class="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
                         <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-    <tr>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PRODUCT</th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CATEGORY</th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DESCRIPTION</th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PRICE</th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">STOCK</th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ACTIONS</th>
-    </tr>
-</thead>
-
-                                <tbody class="bg-white divide-y divide-gray-200" id="products-table-body">
-    @foreach ($products as $product)
-        <tr class="hover:bg-gray-50">
-            <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center">
-                    @if ($product->image)
-                        <div class="flex-shrink-0 h-10 w-10">
-                            <img class="h-10 w-10 rounded-full object-cover" src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}">
-                        </div>
-                    @endif
-                    <div class="ml-4">
-                        <div class="text-sm font-medium text-gray-900">{{ $product->name }}</div>
-                    </div>
-                </div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product->category->name ?? 'Uncategorized' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product->description ?? 'No description' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($product->price, 2) }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                <span class="{{ $product->stock > 0 ? ($product->stock < 10 ? 'text-yellow-600' : 'text-green-600') : 'text-red-600' }}">
-                    {{ $product->stock }}
-                </span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <button onclick="editProduct({{ $product->id }})" class="text-purple-600 hover:text-purple-900 mr-3">Edit</button>
-                <form action="{{ route('admin.products.destroy', $product->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this product?');">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
-                </form>
-            </td>
-        </tr>
-    @endforeach
-</tbody>
+                            <table class="min-w-full divide-y divide-gray-200 table-fixed">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="w-1/6 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                                        <th class="w-1/6 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                        <th class="w-2/6 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                        <th class="w-1/6 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                        <th class="w-1/6 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                                        <th class="w-1/6 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="products-table-body">
+                                    @foreach ($products as $product)
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="flex items-center">
+                                                    @if ($product->image)
+                                                        <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="h-10 w-10 rounded-full">
+                                                    @else
+                                                        <span class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">N/A</span>
+                                                    @endif
+                                                    <div class="ml-4">
+                                                        <div class="text-sm font-medium text-gray-900">{{ $product->name }}</div>
+                                                        @if ($product->description)
+                                                            <div class="text-sm text-gray-500 truncate max-w-xs">{{ $product->description }}</div>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product->category->name ?? 'Uncategorized' }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($product->price, 2) }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <span class="{{ $product->stock > 0 ? ($product->stock < 10 ? 'text-yellow-600' : 'text-green-600') : 'text-red-600' }}">
+                                                    {{ $product->stock }}
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                <button onclick="editProduct({{ $product->id }})" class="text-purple-600 hover:text-purple-900 mr-3">Edit</button>
+                                                <form action="{{ route('admin.products.destroy', $product->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this product?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
                             </table>
                         </div>
                         <!-- Pagination -->
@@ -923,15 +925,111 @@
 </script> 
 
                <!-- Orders Section -->
-<div id="orders-section" class="section-content hidden">
+{{-- filepath: c:\xampp\htdocs\LaravelHMcosmetics\cosmeticss\resources\views\admin\dashboard.blade.php --}}
+{{-- filepath: c:\xampp\htdocs\LaravelHMcosmetics\cosmeticss\resources\views\admin\dashboard.blade.php --}}
+<div id="orders-section" class="section-content">
     <div class="flex justify-between items-center mb-6">
         <h3 class="text-xl font-semibold text-gray-800">Orders Management</h3>
-        <div class="space-x-3">
-            <button onclick="exportOrders()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                <i class="fas fa-file-export mr-2"></i>Export
+        <button onclick="exportOrders()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <i class="fas fa-file-export mr-2"></i>Export Orders
+        </button>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="bg-white p-4 rounded-lg shadow border border-gray-200 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                <input type="text" id="order-search" placeholder="Order ID or customer..." 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select id="status-filter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
+                    <option value="">All Statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="processing">Processing</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+                <div class="flex space-x-2">
+                    <input type="date" id="start-date" placeholder="Start date" 
+                        class="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
+                    <input type="date" id="end-date" placeholder="End date" 
+                        class="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Total Range</label>
+                <div class="flex space-x-2">
+                    <input type="number" id="min-total" placeholder="Min" 
+                        class="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
+                    <input type="number" id="max-total" placeholder="Max" 
+                        class="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
+                </div>
+            </div>
+        </div>
+        <div class="mt-3 flex justify-end">
+            <button onclick="resetOrderFilters()" class="px-3 py-1 text-sm text-gray-600 hover:text-gray-800">
+                Reset Filters
+            </button>
+            <button onclick="applyOrderFilters()" class="ml-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                Apply
             </button>
         </div>
     </div>
+
+    <!-- Orders Table -->
+    <div class="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="orders-table-body" class="bg-white divide-y divide-gray-200">
+                    @foreach($orders as $order)
+                    <tr data-order-id="{{ $order->id }}">
+                        <td class="px-6 py-4 whitespace-nowrap">{{ $order->id }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {{ $order->user->name ?? 'Guest' }}<br>
+                            <small class="text-gray-500">{{ $order->contact_number }}</small>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">₱{{ number_format($order->total, 2) }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full 
+                                {{ $order->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                                   ($order->status === 'processing' ? 'bg-blue-100 text-blue-800' : 
+                                   ($order->status === 'completed' ? 'bg-green-100 text-green-800' : 
+                                   'bg-red-100 text-red-800')) }}">
+                                {{ ucfirst($order->status) }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ $order->created_at->format('Y-m-d H:i') }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button onclick="viewOrderDetails({{ $order->id }})" class="text-blue-600 hover:text-blue-900 mr-3">View</button>
+                            <button onclick="deleteOrder({{ $order->id }})" class="text-red-600 hover:text-red-900">Delete</button>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        <!-- Pagination -->
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            {{ $orders->links() }}
+        </div>
+    </div>
+</div>
 
     <!-- Search and Filter -->
     <div class="bg-white p-4 rounded-lg shadow border border-gray-200 mb-4">
@@ -1470,13 +1568,367 @@
         loadOrders(1, {});
     }
 
-    // View order details
-    function viewOrderDetails(orderId) {
-        const order = orders.find(o => o.id === orderId);
-        if (!order) {
-            showToast('Order not found!', 'error');
-            return;
+   // Orders Management Functions
+function viewOrderDetails(orderId) {
+    // Show loading state
+    const modal = document.getElementById('order-modal');
+    modal.classList.remove('hidden');
+    document.getElementById('order-modal-content').innerHTML = `
+        <div class="flex justify-center py-8">
+            <i class="fas fa-spinner fa-spin text-purple-600 text-2xl"></i>
+        </div>
+    `;
+
+    // Fetch order details from server
+    fetch(`/admin/orders/${orderId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                populateOrderModal(data.order);
+            } else {
+                throw new Error(data.message || 'Failed to load order details');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('order-modal-content').innerHTML = `
+                <div class="p-4 text-red-500">
+                    Error loading order details: ${error.message}
+                </div>
+            `;
+        });
+}
+
+function populateOrderModal(order) {
+    const formattedDate = new Date(order.created_at).toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+
+    document.getElementById('order-modal-content').innerHTML = `
+        <div class="flex justify-between items-start">
+            <div>
+                <h3 class="text-lg font-medium text-gray-900">Order #${order.id}</h3>
+                <p class="text-sm text-gray-500">Placed on ${formattedDate}</p>
+            </div>
+            <div>
+                <span class="px-3 py-1 rounded-full text-xs font-semibold ${
+                    order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                    order.status === 'processing' ? 'bg-blue-100 text-blue-800' :
+                    order.status === 'completed' ? 'bg-green-100 text-green-800' :
+                    'bg-red-100 text-red-800'
+                }">${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span>
+            </div>
+        </div>
+        
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="col-span-2">
+                <h4 class="text-md font-medium text-gray-900 mb-3">Order Items</h4>
+                <div class="bg-gray-50 rounded-lg overflow-hidden border border-gray-200">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="order-items-body" class="bg-white divide-y divide-gray-200">
+                            ${order.items.map(item => `
+                                <tr>
+                                    <td class="px-4 py-3 whitespace-nowrap">${item.product_name}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">₱${parseFloat(item.price).toFixed(2)}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${item.quantity}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">₱${parseFloat(item.price * item.quantity).toFixed(2)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                        <tfoot class="bg-gray-50">
+                            <tr>
+                                <td colspan="3" class="px-4 py-3 text-right text-sm font-medium text-gray-500">Subtotal</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">₱${parseFloat(order.subtotal).toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="px-4 py-3 text-right text-sm font-medium text-gray-500">Shipping</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">₱${parseFloat(order.shipping).toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="px-4 py-3 text-right text-sm font-medium text-gray-500">Total</td>
+                                <td class="px-4 py-3 text-sm font-semibold text-gray-900">₱${parseFloat(order.total).toFixed(2)}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            
+            <div>
+                <h4 class="text-md font-medium text-gray-900 mb-3">Customer Details</h4>
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 mb-4">
+                    <div class="flex items-center mb-3">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
+                            <i class="fas fa-user text-purple-600"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-900">${order.user?.name || 'Guest Customer'}</p>
+                            <p class="text-sm text-gray-500">ID: ${order.user_id}</p>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <div>
+                            <p class="text-xs text-gray-500">Contact</p>
+                            <p class="text-sm text-gray-900">${order.contact_number}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <h4 class="text-md font-medium text-gray-900 mb-3">Shipping Address</h4>
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <p class="text-sm text-gray-900">${order.shipping_address}</p>
+                    ${order.notes ? `<p class="text-sm text-gray-500 mt-2"><strong>Notes:</strong> ${order.notes}</p>` : ''}
+                </div>
+                
+                <div class="mt-4">
+                    <label for="order-status" class="block text-sm font-medium text-gray-700 mb-1">Update Status</label>
+                    <div class="flex">
+                        <select id="order-status" class="flex-grow px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
+                            <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
+                            <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>Processing</option>
+                            <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>Completed</option>
+                            <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                        </select>
+                        <button onclick="updateOrderStatus(${order.id})" class="ml-2 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors">
+                            Update
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function deleteOrder(orderId) {
+    if (confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
+        // Show loading state
+        const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
+        if (row) {
+            row.innerHTML = `
+                <td colspan="6" class="px-6 py-4 text-center">
+                    <div class="flex justify-center">
+                        <i class="fas fa-spinner fa-spin text-purple-600 text-2xl"></i>
+                    </div>
+                </td>
+            `;
         }
+
+        // Send delete request to server
+        fetch(`/admin/orders/${orderId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Order deleted successfully', 'success');
+                if (row) {
+                    row.remove();
+                }
+            } else {
+                throw new Error(data.message || 'Failed to delete order');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast(error.message || 'Failed to delete order', 'error');
+            if (row) {
+                row.innerHTML = `
+                    <td colspan="6" class="px-6 py-4 text-center text-red-500">
+                        Error: ${error.message}
+                    </td>
+                `;
+            }
+        });
+    }
+}
+
+function updateOrderStatus(orderId) {
+    const newStatus = document.getElementById('order-status').value;
+    const updateBtn = document.querySelector('#order-modal button[onclick="updateOrderStatus(' + orderId + ')"]');
+    const originalText = updateBtn.innerHTML;
+    
+    updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Updating...';
+    updateBtn.disabled = true;
+
+    fetch(`/admin/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ status: newStatus })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Order status updated successfully', 'success');
+            
+            // Update the status in the table
+            const statusCell = document.querySelector(`tr[data-order-id="${orderId}"] .status-cell`);
+            if (statusCell) {
+                statusCell.innerHTML = `
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full ${
+                        newStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                        newStatus === 'processing' ? 'bg-blue-100 text-blue-800' :
+                        newStatus === 'completed' ? 'bg-green-100 text-green-800' :
+                        'bg-red-100 text-red-800'
+                    }">${newStatus.charAt(0).toUpperCase() + newStatus.slice(1)}</span>
+                `;
+            }
+            
+            // Update the status in the modal
+            const statusBadge = document.querySelector('#order-modal span');
+            if (statusBadge) {
+                statusBadge.className = `px-3 py-1 rounded-full text-xs font-semibold ${
+                    newStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                    newStatus === 'processing' ? 'bg-blue-100 text-blue-800' :
+                    newStatus === 'completed' ? 'bg-green-100 text-green-800' :
+                    'bg-red-100 text-red-800'
+                }`;
+                statusBadge.textContent = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
+            }
+        } else {
+            throw new Error(data.message || 'Failed to update order status');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast(error.message || 'Failed to update order status', 'error');
+    })
+    .finally(() => {
+        updateBtn.innerHTML = originalText;
+        updateBtn.disabled = false;
+    });
+}
+
+function exportOrders() {
+    // Get current filters
+    const filters = {
+        search: document.getElementById('order-search').value,
+        status: document.getElementById('status-filter').value,
+        startDate: document.getElementById('start-date').value,
+        endDate: document.getElementById('end-date').value,
+        minTotal: document.getElementById('min-total').value,
+        maxTotal: document.getElementById('max-total').value
+    };
+
+    // Create query string from filters
+    const queryParams = new URLSearchParams();
+    for (const key in filters) {
+        if (filters[key]) {
+            queryParams.append(key, filters[key]);
+        }
+    }
+
+    // Trigger download
+    window.location.href = `/admin/orders/export?${queryParams.toString()}`;
+}
+
+function applyOrderFilters() {
+    const filters = {
+        search: document.getElementById('order-search').value,
+        status: document.getElementById('status-filter').value,
+        startDate: document.getElementById('start-date').value,
+        endDate: document.getElementById('end-date').value,
+        minTotal: document.getElementById('min-total').value,
+        maxTotal: document.getElementById('max-total').value
+    };
+
+    // Convert filters to query string
+    const queryParams = new URLSearchParams();
+    for (const key in filters) {
+        if (filters[key]) {
+            queryParams.append(key, filters[key]);
+        }
+    }
+
+    // Reload the page with filters
+    window.location.href = `${window.location.pathname}?${queryParams.toString()}`;
+}
+
+function resetOrderFilters() {
+    window.location.href = window.location.pathname;
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Set up event listeners for order search
+    document.getElementById('order-search').addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') {
+            applyOrderFilters();
+        }
+    });
+});
+    // Populate modal fields with order details
+    document.getElementById('order-id').textContent = order.id;
+    document.getElementById('order-date').textContent = order.created_at;
+    document.getElementById('order-status').value = order.status;
+    document.getElementById('order-subtotal').textContent = `₱${order.subtotal.toFixed(2)}`;
+    document.getElementById('order-shipping').textContent = `₱${order.shipping.toFixed(2)}`;
+    document.getElementById('order-total').textContent = `₱${order.total.toFixed(2)}`;
+    document.getElementById('shipping-address').textContent = order.shipping_address;
+    document.getElementById('order-notes').textContent = order.notes || 'No notes';
+    document.getElementById('customer-name').textContent = order.customer_name;
+    document.getElementById('customer-id').textContent = `ID: ${order.user_id}`;
+    document.getElementById('customer-contact').textContent = order.contact_number;
+
+    // Populate order items
+    const itemsBody = document.getElementById('order-items-body');
+    itemsBody.innerHTML = '';
+    order.items.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap">${item.product_name}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">₱${item.price.toFixed(2)}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.quantity}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₱${item.subtotal.toFixed(2)}</td>
+        `;
+        itemsBody.appendChild(tr);
+    });
+
+    // Show the modal
+    document.getElementById('order-modal').classList.remove('hidden');
+}
+
+function deleteOrder(orderId) {
+    if (confirm('Are you sure you want to delete this order?')) {
+        // Simulate API call to delete the order
+        const orderIndex = orders.findIndex(o => o.id == orderId);
+        if (orderIndex !== -1) {
+            orders.splice(orderIndex, 1);
+
+            // Remove the order row from the table
+            const orderRow = document.querySelector(`tr[data-order-id="${orderId}"]`);
+            if (orderRow) {
+                orderRow.remove();
+            }
+
+            showToast('Order deleted successfully', 'success');
+        } else {
+            showToast('Order not found!', 'error');
+        }
+    }
+}
+        
+        }
+    }
+}
         
         // Set order details
         document.getElementById('order-id').textContent = order.id;
@@ -1687,61 +2139,15 @@
     <input type="file" id="file-input" class="hidden" accept=".xlsx, .xls, .csv">
 
     <!-- Product Modal -->
-    <div id="product-modal" class="fixed inset-0 z-50 hidden overflow-y-auto">
-        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
-                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
-            </div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4" id="product-modal-title">Add New Product</h3>
-                    <form id="product-form">
-                        <input type="hidden" id="product-id">
-                        <div class="mb-4">
-                            <label for="product-name" class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
-                            <input type="text" id="product-name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
-                        </div>
-                        <div class="mb-4">
-                            <label for="product-category" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                            <select id="product-category" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
-                                <option value="">Select a category</option>
-                                @foreach ($categories as $category)
-                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="mb-4">
-                            <label for="product-price" class="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
-                            <input type="number" step="0.01" min="0" id="product-price" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
-                        </div>
-                        <div class="mb-4">
-                            <label for="product-stock" class="block text-sm font-medium text-gray-700 mb-1">Stock</label>
-                            <input type="number" min="0" id="product-stock" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
-                        </div>
-                        <div class="mb-4">
-                            <label for="product-image" class="block text-sm font-medium text-gray-700 mb-1">Product Image</label>
-                            <input type="file" id="product-image" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
-                            <p class="text-xs text-gray-500 mt-1">Accepted formats: JPG, PNG, GIF (Max 2MB)</p>
-                            <div id="image-preview" class="mt-2 hidden">
-                                <img id="preview-image" src="" alt="Preview" class="h-20 object-contain">
-                            </div>
-                        </div>
-                        <div class="mb-4">
-                            <label for="product-description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                            <textarea id="product-description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500"></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                    <button type="button" onclick="saveProduct()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-purple-600 text-base font-medium text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:ml-3 sm:w-auto sm:text-sm">
-                        Save
-                    </button>
-                    <button type="button" onclick="closeModal('product-modal')" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                        Cancel
-                    </button>
-                </div>
-            </div>
+    <div id="product-modal" class="hidden">
+        <h3 id="product-modal-title"></h3>
+        <input type="text" id="product-name">
+        <select id="product-category"></select>
+        <input type="number" id="product-price">
+        <input type="number" id="product-stock">
+        <textarea id="product-description"></textarea>
+        <div id="image-preview" class="hidden">
+            <img id="preview-image" src="" alt="Preview">
         </div>
     </div>
 
@@ -1767,7 +2173,6 @@
                     <div id="import-results" class="hidden">
                         <div class="border-t border-gray-200 pt-3">
                             <h4 class="text-sm font-medium text-gray-700 mb-2">Import Results</h4>
-                            <div class="grid grid-cols-2 gap-2 text-sm">
                                 <div class="bg-green-50 p-2 rounded">
                                     <span class="font-medium text-green-800">Success:</span>
                                     <span id="import-success-count" class="ml-1">0</span>
@@ -1843,6 +2248,7 @@
                 if (e.key === 'Enter') {
                     applyFilters();
                 }
+            
             });
         });
 
@@ -2158,8 +2564,13 @@
                     document.getElementById('product-description').value = product.description || '';
                     
                     if (product.image) {
-                        document.getElementById('preview-image').src = `/storage/${product.image}`;
-                        document.getElementById('image-preview').classList.remove('hidden');
+                        const previewImage = document.getElementById('preview-image');
+                        if (previewImage) {
+                            previewImage.src = `/storage/${product.image}`;
+                            imagePreview.classList.remove('hidden');
+                        }
+                    } else {
+                        imagePreview.classList.add('hidden');
                     }
                 }
             } else {
@@ -2309,13 +2720,47 @@
         }
 
         function editProduct(productId) {
-            const product = products.find(p => p.id === productId);
-            if (product) {
-                openProductModal(productId);
-            } else {
-                showToast('Product not found!', 'error');
-            }
+    const product = products.find(p => p.id === productId);
+    if (product) {
+        const modal = document.getElementById('product-modal');
+        const title = document.getElementById('product-modal-title');
+        const nameInput = document.getElementById('product-name');
+        const categorySelect = document.getElementById('product-category');
+        const priceInput = document.getElementById('product-price');
+        const stockInput = document.getElementById('product-stock');
+        const descriptionInput = document.getElementById('product-description');
+        const imagePreview = document.getElementById('image-preview');
+
+        if (!modal || !title || !nameInput || !categorySelect || !priceInput || !stockInput || !descriptionInput) {
+            console.error('One or more modal elements are missing.');
+            return;
         }
+
+        // Populate modal fields with product data
+        title.textContent = 'Edit Product';
+        nameInput.value = product.name;
+        categorySelect.value = product.category_id;
+        priceInput.value = product.price;
+        stockInput.value = product.stock;
+        descriptionInput.value = product.description || '';
+
+        if (product.image) {
+            const previewImage = document.getElementById('preview-image');
+            if (previewImage) {
+                previewImage.src = `/storage/${product.image}`;
+                imagePreview.classList.remove('hidden');
+            }
+        } else {
+            imagePreview.classList.add('hidden');
+        }
+
+        modal.classList.remove('hidden');
+    } else {
+        console.error('Product not found.');
+    }
+    console.log('Editing product:', productId);
+    console.log('Product data:', product);
+}
 
         function deleteProduct(id) {
             currentAction = 'deleteProduct';

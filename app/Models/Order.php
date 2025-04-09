@@ -18,14 +18,13 @@ class Order extends Model
         'shipping_address',
         'contact_number',
         'notes',
-        'payment_method',
-        'billing_address'
     ];
 
-    public function items()
+    /**
+     * Define the relationship to the user who placed the order.
+     */
+    public function user()
     {
-        return $this->hasMany(OrderItem::class);
+        return $this->belongsTo(User::class);
     }
-
-   
 }

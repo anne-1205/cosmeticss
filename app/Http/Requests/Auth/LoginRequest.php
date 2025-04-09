@@ -53,7 +53,6 @@ class LoginRequest extends FormRequest
             ]);
         }
 
-        // Check if the user's email is verified
         if (!$user->hasVerifiedEmail()) {
             throw ValidationException::withMessages([
                 'email' => trans('auth.verify_email'),

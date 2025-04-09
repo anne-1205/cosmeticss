@@ -10,13 +10,28 @@ use App\Models\User;
 
 class RegisterController extends Controller
 {
-    use RegistersUsers;
+    // Manually implement registration logic as RegistersUsers is no longer available
 
-    // Override the registered method to send email verification
-    protected function registered(Request $request, User $user)
+    // Handle user registration manually
+    public function register(Request $request)
     {
-        // Send email verification after registration
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => bcrypt($request->password),
+        ]);
+
+        event(new Registered($user));
+
         $user->sendEmailVerificationNotification();
+
+        return response()->json(['message' => 'Registration successful. Please verify your email.']);
     }
 
     // Add additional methods or customizations as needed
